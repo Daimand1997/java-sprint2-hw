@@ -5,81 +5,101 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class Main {
+    // Справочиник наименования месяцов
     final static String[] NAME_MONTH = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
 
     public static void main(String[] args) {
-        final String PATH_WITH_REPORT = "resources";
+        final String PATH_WITH_REPORT = "resources"; // Путь папки где хранятся .csv
         Scanner scanner = new Scanner(System.in);
-        HashMap<String, HashMap<String, List<MonthlyReport>>> monthlyReport = new HashMap<>();
-        HashMap<String, List<YearlyReport>> yearlyReport = new HashMap<>();
+        HashMap<String, HashMap<String, List<MonthlyReport>>> monthlyReport = new HashMap<>(); // Мапа где ключ Год, в котором Мапа где ключ Месяц и со значением списка объектов
+        HashMap<String, List<YearlyReport>> yearlyReport = new HashMap<>(); // Мапа где ключ Год и со значением списком объектов
 
         while (true) {
-            printMenu();
-            String command = scanner.nextLine().trim();
+            printMenu(); // Вывод меню выбора
+            String command = scanner.nextLine().trim(); // Считывание выбранного пункта
             if (command.equals("1")) {
-                List<String> nameFiles = getNameFileInFolder(PATH_WITH_REPORT, "m.");
-                HashMap<String, List<MonthlyReport>> currentMonthInYear = new HashMap<>();
+                List<String> nameFiles = getNameFileInFolder(PATH_WITH_REPORT, "m."); // Получаем список файлов которые начинаются c m. по пути resources
+                HashMap<String, List<MonthlyReport>> currentMonthInYear = new HashMap<>(); // Создаём Мапу в которой будет хранится в ключе номер месяца, в значения список объектов
+                // Пробегаемся по полученным файлам
                 for (String nameFile : nameFiles) {
-                    List<String> readFile = readFileContentsWithStart(PATH_WITH_REPORT, nameFile);
+                    List<String> readFile = readFileContentsWithStart(PATH_WITH_REPORT, nameFile); // Получаем все строки из конкретного файла
+                    // Если успешно считали
                     if (readFile != null && readFile.size() > 1) {
-                        List<MonthlyReport> currentMonth = new ArrayList<>();
+                        List<MonthlyReport> currentMonth = new ArrayList<>(); // Создаём список объектов для определённого месяца
+                        // Пробегаемся по каждой строчке файла
                         for (int i = 1; i < readFile.size(); i++) {
                             String[] attributes = readFile.get(i).split(",");
+                            // Создаём объект по полученным данным из файла и передаём их в конструктор
                             MonthlyReport currentItem = new MonthlyReport(
                                     attributes[0],
                                     Boolean.parseBoolean(attributes[1]),
                                     Integer.parseInt(attributes[2]),
                                     Integer.parseInt(attributes[3]));
-                            currentMonth.add(currentItem);
+                            currentMonth.add(currentItem); // Добавляем в список объектов текущую строку
                         }
-                        currentMonthInYear.put(nameFile.substring(nameFile.length() - 6, nameFile.length() - 4), currentMonth);
-                        monthlyReport.put(nameFile.substring(nameFile.length() - 10, nameFile.length() - 6), currentMonthInYear);
+                        currentMonthInYear.put(nameFile.substring(nameFile.length() - 6, nameFile.length() - 4), currentMonth); // Записываю в Мапу месяц с которого считывал данные
+                        monthlyReport.put(nameFile.substring(nameFile.length() - 10, nameFile.length() - 6), currentMonthInYear); // Записываю в Мапу год с которого считывал данные из файла
                     }
                 }
+                System.out.println("Выполнение операции успешно завершено");
             } else if (command.equals("2")) {
-                List<String> nameFiles = getNameFileInFolder(PATH_WITH_REPORT, "y.");
+                List<String> nameFiles = getNameFileInFolder(PATH_WITH_REPORT, "y."); // Получить список файлов которые начинаются с y.
+                // Пробегаюсь по файлам
                 for (String nameFile : nameFiles) {
-                    List<String> readFile = readFileContentsWithStart(PATH_WITH_REPORT, nameFile);
+                    List<String> readFile = readFileContentsWithStart(PATH_WITH_REPORT, nameFile); // Считываю определённый файл
+                    // Если успешно считали
                     if (readFile != null && readFile.size() > 1) {
-                        List<YearlyReport> currentYear = new ArrayList<>();
+                        List<YearlyReport> currentYear = new ArrayList<>(); // Создаю список текущего года, который был в файле
+                        // Пробегаюсь по строкам .csv файла
                         for (int i = 1; i < readFile.size(); i++) {
                             String[] attributes = readFile.get(i).split(",");
                             YearlyReport currentItem = new YearlyReport(
                                     attributes[0],
                                     Integer.parseInt(attributes[1]),
                                     Boolean.parseBoolean(attributes[2]));
-                            currentYear.add(currentItem);
+                            currentYear.add(currentItem); // Добавляю в список построчно объекты
                         }
-                        yearlyReport.put(nameFile.substring(nameFile.length() - 8, nameFile.length() - 4), currentYear);
+                        yearlyReport.put(nameFile.substring(nameFile.length() - 8, nameFile.length() - 4), currentYear); // Записываю в Мапу где ключ является год из файла
                     }
                 }
                 System.out.println("Выполнение операции успешно завершено");
             } else if (command.equals("3")) {
+                // Если первый и второй пункт успешно были вызваны
                 if (monthlyReport.size() > 0 && yearlyReport.size() > 0) {
-                    HashMap<String, HashMap<String, HashMap<Boolean, Integer>>> totalSumMonthWithYear = new HashMap<>();
+                    HashMap<String, HashMap<String, HashMap<Boolean, Integer>>> totalSumMonthWithYear = new HashMap<>(); // Создаю Мапу где Ключ будет Год, в которой хранится Мапа где Ключ месяц
+                    // Пробегаюсь по годам из MonthlyReport
                     for (String nameYear : monthlyReport.keySet()) {
-                        HashMap<String, HashMap<Boolean, Integer>> totalSumMonth = new HashMap<>();
+                        HashMap<String, HashMap<Boolean, Integer>> totalSumMonth = new HashMap<>(); // Создаю Мапу в которую буду записывать расходы и доходы определённого месяца в году
+                        // Получаю наименование месяца в определённом году
                         for (String nameMonth : monthlyReport.get(nameYear).keySet()) {
-                            HashMap<Boolean, Integer> currentSumMonth = new HashMap<>();
+                            HashMap<Boolean, Integer> currentSumMonth = new HashMap<>(); // Создаю Мапу в которой хранится общая сумма доходов и расходов у в определённом месяца
                             currentSumMonth.put(true, MonthlyReport.getTotalSumOnExpense(monthlyReport.get(nameYear).get(nameMonth), true));
                             currentSumMonth.put(false, MonthlyReport.getTotalSumOnExpense(monthlyReport.get(nameYear).get(nameMonth), false));
                             totalSumMonth.put(nameMonth, currentSumMonth);
                         }
                         totalSumMonthWithYear.put(nameYear, totalSumMonth);
                     }
+                    // Пробегаю по ключу годов у Мапы с объектами yearlyReport
                     for (String nameYear : yearlyReport.keySet()) {
+                        // Пробегаю по ключу годов у Мапы с объектами totalSumMonthWithYear
                         for (String nameYearInMonth : totalSumMonthWithYear.keySet()) {
+                            // Если в годовом отчёте не совпадает год месячного отчёта
                             if (!nameYearInMonth.equals(nameYear)) {
                                 continue;
                             }
+                            // Получаю объект определённого года
                             for (YearlyReport yearlyCurrentReport : yearlyReport.get(nameYear)) {
+                                // Получаю номер месяца который будем сверять
                                 for (String nameMonth : totalSumMonthWithYear.get(nameYearInMonth).keySet()) {
+                                    // Если месяца в годовом отчёте совпадают с месячным
                                     if (yearlyCurrentReport.month.equals(nameMonth)) {
+                                        // Получаю и ключ и значение у Мапы
                                         for (Map.Entry<Boolean, Integer> entry : totalSumMonthWithYear.get(nameYearInMonth).get(nameMonth).entrySet()) {
+                                            // Проверяю чтобы это были либо доходы либо расходы у двух объектов
                                             if (yearlyCurrentReport.is_expense == entry.getKey()
                                                     && yearlyCurrentReport.amount != entry.getValue()) {
                                                 System.out.println("Обнаружено несоответствие в отчётах у месяца: " +
-                                                        NAME_MONTH[Integer.parseInt(nameMonth) - 1]);
+                                                        NAME_MONTH[Integer.parseInt(nameMonth) - 1]); // Получаю из справочника имя
                                             }
                                         }
                                     }
@@ -89,7 +109,7 @@ public class Main {
                     }
                     System.out.println("Выполнение операции успешно завершено");
                 } else {
-                    System.out.println("Сначла необходимо считать все месячные (п.1) и годовые (п.2) отчёты.");
+                    System.out.println("Сначала необходимо считать все месячные (п.1) и годовые (п.2) отчёты.");
                 }
             } else if (command.equals("4")) {
                 if (monthlyReport.size() > 0) {
@@ -108,7 +128,7 @@ public class Main {
                     }
                     System.out.println("Выполнение операции успешно завершено");
                 } else {
-                    System.out.println("Сначла необходимо считать все месячные отчёты (п.1)");
+                    System.out.println("Сначала необходимо считать все месячные отчёты (п.1)");
                 }
             } else if (command.equals("5")) {
                 if(yearlyReport.size() > 0) {
@@ -122,6 +142,7 @@ public class Main {
                                 + (YearlyReport.getTotalSumOnExpense(yearlyReport.get(nameYear), false)
                                 / YearlyReport.getItemsOnExpense(yearlyReport.get(nameYear), false).size()));;
                     }
+                    System.out.println("Выполнение операции успешно завершено");
                 }
                 else {
                     System.out.println("Сначла необходимо считать все годовые отчёты (п.2)");
