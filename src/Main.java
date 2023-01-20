@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class Main {
-    // Справочиник наименования месяцов
+    // Справочник наименования месяцев
     final static String[] NAME_MONTH = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
 
     public static void main(String[] args) {
